@@ -1,0 +1,35 @@
+
+
+
+connection_reports variable     86 src/Reporter.c   report_connection connection_reports[kReport_MAXIMUM] = {
+multiple_reports variable    106 src/Reporter.c   report_statistics multiple_reports[kReport_MAXIMUM] = {
+sThread          variable    108 src/iperf_main.cpp nthread_t sThread;
+serverstatistics_reports variable    101 src/Reporter.c   report_serverstatistics serverstatistics_reports[kReport_MAXIMUM] = {
+settings_reports variable     91 src/Reporter.c   report_settings settings_reports[kReport_MAXIMUM] = {
+ssStatus         variable     49 src/service.c    SERVICE_STATUS ssStatus; // current status of the service
+sshStatusHandle  variable     50 src/service.c    SERVICE_STATUS_HANDLE sshStatusHandle;
+statistics_reports variable     96 src/Reporter.c   report_statistics statistics_reports[kReport_MAXIMUM] = {
+szErr            variable     52 src/service.c    TCHAR szErr[256];
+
+
+
+
+// Done
+ReportRoot       variable    112 src/Reporter.c   ReportHeader *ReportRoot = NULL;
+__gnu_getopt_initialized variable    108 src/gnu_getopt.c int __gnu_getopt_initialized = 0;
+clients          variable     60 src/List.cpp     Iperf_ListEntry *clients = NULL;
+dwErr            variable     51 src/service.c    DWORD dwErr = 0;
+gnu_optarg       variable     87 src/gnu_getopt.c char *gnu_optarg = NULL;
+gnu_opterr       variable    122 src/gnu_getopt.c int gnu_opterr = 1;
+gnu_optind       variable    102 src/gnu_getopt.c int gnu_optind = 1;
+gnu_optopt       variable    128 src/gnu_getopt.c int gnu_optopt = '?';
+groupID          variable     93 src/iperf_main.cpp int groupID = 0;
+nonterminating_num variable     88 compat/Thread.c  int nonterminating_num = 0;
+sInterupted      variable     90 src/iperf_main.cpp int sInterupted = 0;
+thread_sNum      variable     86 compat/Thread.c  int thread_sNum = 0;
+ReportCond       variable     99 src/iperf_main.cpp Condition ReportCond;
+ReportDoneCond   variable    100 src/iperf_main.cpp Condition ReportDoneCond;
+buffer           variable    111 src/Reporter.c   char buffer[64]; // Buffer for printing
+clients_mutex    variable     61 src/List.cpp     Mutex clients_mutex; 
+groupCond        variable     95 src/iperf_main.cpp Mutex groupCond;
+thread_sNum_cond variable     91 compat/Thread.c  Condition thread_sNum_cond;
