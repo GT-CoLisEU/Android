@@ -53,74 +53,35 @@ jstring
 Java_br_com_rnp_measurements_Iperf_IperfTask_stringFromJNI( JNIEnv* env, jobject thiz, jstring ipaddr, jstring serveripaddr, jstring serverport, jint testtype, jstring tmpdir)
 {
 
-    //__android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "Contador = %d",cont++);
-    char **command;
-    const char* tmpdirpath = ConvertJString( env, tmpdir );
-    const char* tmpipaddr = ConvertJString( env, ipaddr );
-    const char* tmpserveripaddr = ConvertJString( env, serveripaddr );
-    const char* tmpserverport = ConvertJString( env, serverport );
-    int ttype = testtype;
+    char* tmpdirpath = ConvertJString( env, tmpdir );
+    char* tmpipaddr = ConvertJString( env, ipaddr );
 
-    //__android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "Temp dir = %s, Android IP: %s, Server IP: %s, Server Port: %s, Test Type: %d", tmpdirpath, tmpipaddr, tmpserveripaddr,tmpserverport,ttype);
+    __android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "Temp dir = %s, Android IP: %s", tmpdirpath, tmpipaddr);
 
-      char *str_file = "/output.jni";
+//    char **command = (char *[]){"bwctl", "-T", "iperf", "-c", "200.130.99.55", "-a 1"};
+//    __android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "Starting BWCTL");
+//    bwctlRun(tmpipaddr, tmpdirpath, 6, command);
+
+
+      char *str_file = "/output.txt";
       char *str_path = (char *) malloc(1 + strlen(tmpdirpath)+ strlen(str_file) );
       strcpy(str_path, tmpdirpath);
       strcat(str_path, str_file);
 
-      //__android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "%s", str_path );
+        __android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "%s", str_path );
       if(!(output_jni = fopen(str_path,"w+"))){
            __android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "Unable to create temporary file");
-      } else {
-         //char **command = (char *[]){"iperf", "-u", "-t", "21", "-i", "1", "-c", "200.130.99.55", "-p", "12001"};
-         //__android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "Starting Iperf");
-         reset_all();
-         switch (ttype){
-             case TCP_DOWNLINK:
-                //fork();
-                command = (char *[]){"iperf", "-c", tmpserveripaddr, "-t", "10", "-i", "1", "-p", tmpserverport, "-f", "k"};
-                __android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "Iperf TCP_DOWNLINK");
-                iperf_wrapper(11, command);
-                break;
-
-             case TCP_UPLINK:
-                //fork();
-                command = (char *[]){"iperf", "-c", tmpserveripaddr, "-t", "10", "-i", "1", "-p", tmpserverport, "-R", "-f", "k"};
-                __android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "Iperf TCP_UPLINK");
-                iperf_wrapper(12, command);
-                break;
-
-             case UDP_DOWNLINK:
-                //fork();
-                command = (char *[]){"iperf", "-c", tmpserveripaddr, "-t", "10", "-i", "1", "-p", tmpserverport, "-u", "-b", "1g", "-f", "k"};
-                __android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "Iperf UDP_DOWNLINK");
-                iperf_wrapper(14, command);
-                break;
-
-             case UDP_UPLINK:
-                //fork();
-                command = (char *[]){"iperf", "-c", tmpserveripaddr, "-t", "10", "-i", "1", "-p", tmpserverport, "-u", "-R", "-b", "1g", "-f", "k"};
-                __android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "Iperf UDP_UPLINK");
-                iperf_wrapper(15, command);
-                break;
-         }
+      }
 
 
-    }
-   //free(command1);
-   //free(command2);
-   //free(command3);
-   //free(command4);
-   // free(tmpdirpath);
-   // free(tmpipaddr);
-   // free(tmpserveripaddr);
-   // free(tmpserverport);
-   // free(str_file);
-   // free(str_path);
+     //char **command = (char *[]){"iperf", "-u", "-t", "21", "-i", "1", "-c", "200.130.99.55", "-p", "12001"};
+     __android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "Starting Iperf");
+     char **command = (char *[]){"iperf", "-t", "21", "-i", "1", "-c", "200.130.99.55", "-p", "12001"};
+     iperf_wrapper(9, command);
+
     fclose(output_jni);
-    //dlclose();
-
     return (*env)->NewStringUTF(env, "Finish...");
+
 }
 
 
