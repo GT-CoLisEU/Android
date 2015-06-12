@@ -26,7 +26,10 @@ import br.com.rnp.qoslibrary.R;
 
 
 /**
- * Created by matias on 19/02/15.
+ * Check device's network connectivity and speed 
+ * @author emil http://stackoverflow.com/users/220710/emil
+ *
+ * Modified by matias on 13/01/15.
  */
 public class ConnectionInfo {
 
