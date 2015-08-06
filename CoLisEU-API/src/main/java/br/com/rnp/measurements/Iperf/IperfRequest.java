@@ -9,7 +9,25 @@ public class IperfRequest {
     private String transferFormat;
     private long bandwidth;
     private String bandwidthFormat;
+    private float UDPJitter = -1;
+    private String UDPDataLoss = "";
+    private long id;
 
+    public float getUDPJitter() {
+        return UDPJitter;
+    }
+
+    public void setUDPJitter(float UDPJitter) {
+        this.UDPJitter = UDPJitter;
+    }
+
+    public String getUDPDataLoss() {
+        return UDPDataLoss;
+    }
+
+    public void setUDPDataLoss(String UDPDataLoss) {
+        this.UDPDataLoss = UDPDataLoss;
+    }
     public long getId() {
         return id;
     }
@@ -18,7 +36,7 @@ public class IperfRequest {
         this.id = id;
     }
 
-    private long id;
+
 
     public IperfRequest(){}
 
@@ -30,7 +48,63 @@ public class IperfRequest {
         this.setBandwidthFormat(bandwidthFormat);
     }
 
-    public IperfRequest(String iperfRequestLine){
+    public IperfRequest(String iperfRequestLine, int iperfVersion){
+        if(iperfVersion == 3){
+            readIperf3Request(iperfRequestLine);
+        } else {
+            readIperf2Request(iperfRequestLine);
+        }
+
+    }
+
+    private void readIperf3Request(String iperfRequestLine) {
+        //[ 37]  0.0- 1.0 sec  2304 KBytes  18874 Kbits/sec
+        while(iperfRequestLine.contains("  ")) {
+            iperfRequestLine = iperfRequestLine.replaceAll("  ", " ");
+        }
+        iperfRequestLine = iperfRequestLine.replaceAll("- ", "-");
+        String[] lineSplit = iperfRequestLine.split(" ");
+        //lineSplit[0] = [
+        //lineSplit[1] = 37]
+        //lineSplit[2] = 0.0-
+        //lineSplit[3] = 1.0
+        //lineSplit[4] = sec
+        //lineSplit[iperf-2.0.5] = 2304
+        //lineSplit[6] = KBytes
+        //lineSplit[7] = 18874
+        //lineSplit[8] = Kbits/sec
+        for(int x = 0;x<lineSplit.length;x++){
+            System.out.println(x + " = " +lineSplit[x]);
+        }
+
+        if (lineSplit[0].equals("[")) {
+            this.setInterval(lineSplit[2] + lineSplit[3]);
+            this.setTransfer(toLong(lineSplit[4]));
+            this.setTransferFormat(lineSplit[5]);
+            this.setBandwidth(toLong(lineSplit[6]));
+            this.setBandwidthFormat(lineSplit[7]);
+            if(iperfRequestLine.contains(" ms ")){
+                this.setUDPJitter(Float.valueOf(lineSplit[8]));
+                if(iperfRequestLine.contains("%)")) {
+                    this.setUDPDataLoss(lineSplit[10] + " " + lineSplit[11]);
+                }
+            }
+        } else {
+            this.setInterval(lineSplit[1] + lineSplit[2]);
+            this.setTransfer(toLong(lineSplit[3]));
+            this.setTransferFormat(lineSplit[4]);
+            this.setBandwidth(toLong(lineSplit[5]));
+            this.setBandwidthFormat(lineSplit[6]);
+            if(iperfRequestLine.contains(" ms ")){
+                this.setUDPJitter(Float.valueOf(lineSplit[7]));
+                if(iperfRequestLine.contains("%)"))
+                    this.setUDPDataLoss(lineSplit[9] + " " + lineSplit[10]);
+            }
+        }
+
+    }
+
+    private void readIperf2Request(String iperfRequestLine) {
         //[ 37]  0.0- 1.0 sec  2304 KBytes  18874 Kbits/sec
         while(iperfRequestLine.contains("  ")) {
             iperfRequestLine = iperfRequestLine.replaceAll("  ", " ");
@@ -62,7 +136,6 @@ public class IperfRequest {
             this.setBandwidth(toLong(lineSplit[5]));
             this.setBandwidthFormat(lineSplit[6]);
         }
-
     }
 
     private long toLong(String value) {
@@ -92,6 +165,10 @@ public class IperfRequest {
         ret = ret + "Interval: " + interval + "  ";
         ret = ret + "Transfer: " + transfer + " " + transferFormat + "  ";
         ret = ret + "Bandwidth: " + bandwidth + " " + bandwidthFormat;
+        if(UDPJitter != -1){
+            ret = ret + " Jitter: " + UDPJitter + " ms ";
+            ret = ret + "Dataloss: " + UDPDataLoss;
+        }
         return ret;
     }
 

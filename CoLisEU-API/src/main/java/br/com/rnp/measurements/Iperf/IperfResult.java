@@ -24,7 +24,25 @@ public class IperfResult {
     private String TCPwindowSize = null;;
     private String UDPbufferSize = null;;
     private long UDPSentDatagrams;
+    private float UDPJitter = 0;
+    private String UDPDataLoss = "";
     private long id;
+
+    public String getUDPDataLoss() {
+        return UDPDataLoss;
+    }
+
+    public void setUDPDataLoss(String UDPDataLoss) {
+        this.UDPDataLoss = UDPDataLoss;
+    }
+
+    public float getUDPJitter() {
+        return UDPJitter;
+    }
+
+    public void setUDPJitter(float UDPJitter) {
+        this.UDPJitter = UDPJitter;
+    }
 
     public long getUDPSendingDatagrams() {
         return UDPSendingDatagrams;
@@ -47,43 +65,159 @@ public class IperfResult {
 
     public IperfResult(){}
 
-    public IperfResult(StringBuilder iperfResult, int testType){
+    public IperfResult(String iperfResult, int testType, int iperfVersion){
+        if(iperfVersion == 3){
+            readIperf3Result(iperfResult, testType, iperfVersion);
+        } else {
+            readIperf2Result(iperfResult, testType, iperfVersion);
+        }
+    }
+
+    private void readIperf3Result(String iperfResult, int testType, int iperfVersion) {
         if(iperfResult != null){
+            switch (testType) {
+                case 0:
+                    direction = "Downlink";
+                    protocol = "TCP";
+                    break;
+                case 1:
+                    direction = "Uplink";
+                    protocol = "TCP";
+                    break;
+                case 2:
+                    direction = "Downlink";
+                    protocol = "UDP";
+                    break;
+                case 3:
+                    direction = "Uplink";
+                    protocol = "UDP";
+                    break;
+            }
             Log.d("IPERF_CREATE", "Iperf Result: " + iperfResult.toString());
             Scanner scan = new Scanner(iperfResult.toString());
             while (scan.hasNextLine()) {
                 Log.d("IPERF_CREATE", "While in");
                 String linha = scan.nextLine();
                 Log.d("IPERF_CREATE", "Linha: " + linha);
-                if(linha.contains("Client connecting to")){
-                    serverIp = linha.replace("Client connecting to ","").split(",")[0];
-                    serverPort = Integer.valueOf(linha.split("port ")[1]).intValue();
-                } else if (linha.contains("window size:")){
-                    String[] auxProtWin = linha.split(" window size: ");
-                    protocol = auxProtWin[0];
-                    TCPwindowSize = auxProtWin[1];
-                } else if (linha.contains("buffer size:")) {
-                    String[] auxProtWin = linha.split(" buffer size:  ");
-                    protocol = auxProtWin[0];
-                    UDPbufferSize = auxProtWin[1];
-                } else if(linha.contains("local ")){
-                    String[] auxLocal = linha.split("local ")[1].split(" port ");
-                    localIp = auxLocal[0];
-                    localPort = Integer.valueOf(auxLocal[1].split(" connected with ")[0]).intValue();
-                }
-                else if(linha.contains("Sent") && linha.contains("datagrams")){
-                    String auxdatagram = linha.split("Sent ")[1].split(" datagrams")[0];
-                    UDPSentDatagrams = Long.valueOf(auxdatagram).longValue();
-                } else if(linha.contains("Sending") && linha.contains("datagrams")){
-                    // Sending 1470 byte datagrams
-                    String[] auxdatagram = linha.split("Sending ")[1].split(" ");
-                    UDPSendingDatagrams = Long.valueOf(auxdatagram[0]).longValue();
-                    UDPSendingDatagramsFormat = auxdatagram[1];
-                } else if(linha.contains("sec") && linha.contains("Kbits") && !linha.contains("NaN")){
-                    if(listRequest == null){
-                        listRequest = new ArrayList<IperfRequest>();
+                if (!linha.startsWith("bwctl:")) {
+                    if (linha.contains("Connecting to host ")) {
+                        serverIp = linha.replace("Connecting to host ", "").split(",")[0];
+                        serverPort = Integer.valueOf(linha.split("port ")[1]).intValue();
                     }
-                    listRequest.add(new IperfRequest(linha));
+                    if (linha.contains("window size:")) {
+                        String[] auxProtWin = linha.split(" window size: ");
+                        protocol = auxProtWin[0];
+                        TCPwindowSize = auxProtWin[1];
+                    }
+                    if (linha.contains("buffer size:")) {
+                        String[] auxProtWin = linha.split(" buffer size:  ");
+                        protocol = auxProtWin[0];
+                        UDPbufferSize = auxProtWin[1];
+                    }
+                    if (linha.contains("local ") && linha.contains(" port ")) {
+                        String[] auxLocal = linha.split("local ")[1].split(" port ");
+                        localIp = auxLocal[0];
+                        localPort = Integer.valueOf(auxLocal[1].split(" connected to ")[0]).intValue();
+                    }
+
+                    if (linha.contains("Sent") && linha.contains("datagrams")) {
+                        String auxdatagram = linha.split("Sent ")[1].split(" datagrams")[0];
+                        UDPSentDatagrams = Long.valueOf(auxdatagram).longValue();
+                    }
+                    if (linha.contains("Sending") && linha.contains("datagrams")) {
+                        // Sending 1470 byte datagrams
+                        String[] auxdatagram = linha.split("Sending ")[1].split(" ");
+                        UDPSendingDatagrams = Long.valueOf(auxdatagram[0]).longValue();
+                        UDPSendingDatagramsFormat = auxdatagram[1];
+                    }
+
+                    if (protocol.contains("UDP") && direction.contains("Downlink") && linha.contains(" ms ") && !linha.contains("0.00-")) {
+                        if (listRequest != null) {
+                            for (IperfRequest request : listRequest) {
+                                if (request.getUDPJitter() == -1) {
+                                    String[] spl = linha.split("/sec  ")[1].split(" ms ");
+                                    //System.out
+                                    request.setUDPJitter(Float.valueOf(spl[0]));
+                                    request.setUDPDataLoss(spl[1]);
+                                    break;
+                                }
+                            }
+                        }
+                    } else if (linha.contains("sec") && linha.contains("Kbits") && !linha.contains("NaN")) {
+                        //[174]  8.0- 9.0 sec   512 KBytes  4194 Kbits/sec[174]  0.0-10.iperf-2.0.5 sec  3456 KBytes  2691 Kbits/sec
+                        if (listRequest == null) {
+                            listRequest = new ArrayList<IperfRequest>();
+                        }
+                        listRequest.add(new IperfRequest(linha, iperfVersion));
+                    }
+                }
+            }
+            if(listRequest != null && !listRequest.isEmpty()) {
+                while(listRequest.get(listRequest.size()-1).getInterval().startsWith("0.0")) {
+                    IperfRequest finalRequest = listRequest.get(listRequest.size() - 1);
+                    dataTrasnfer = finalRequest.getTransfer();
+                    dataTrasnferFormat = finalRequest.getTransferFormat();
+                    bandwidthAverage = finalRequest.getBandwidth();
+                    bandwidthAverageFormat = finalRequest.getBandwidthFormat();
+                    if (protocol.equals("UDP")){
+                        UDPDataLoss = finalRequest.getUDPDataLoss();
+                        UDPJitter = finalRequest.getUDPJitter();
+                    }
+                    listRequest.remove(finalRequest);
+                }
+
+                if(bandwidthAverage <= 0L){
+                    long acumu = 0L;
+                    int cont = 0;
+                    for(IperfRequest resquest : listRequest){
+                        acumu = acumu + resquest.getBandwidth();
+                        cont++;
+                    }
+                    bandwidthAverage = acumu/cont;
+                }
+            }
+        }
+    }
+
+    private void readIperf2Result(String iperfResult, int testType, int iperfVersion) {
+        if(iperfResult != null) {
+            //Log.d("IPERF_CREATE", "Iperf Result: " + iperfResult.toString());
+            Scanner scan = new Scanner(iperfResult.toString());
+            while (scan.hasNextLine()) {
+
+                Log.d("IPERF_CREATE", "While in");
+                String linha = scan.nextLine();
+                Log.d("IPERF_CREATE", "Linha: " + linha);
+                if(!linha.startsWith("bwctl:")){
+                    if (linha.contains("Client connecting to")) {
+                        serverIp = linha.replace("Client connecting to ", "").split(",")[0];
+                        serverPort = Integer.valueOf(linha.split("port ")[1]).intValue();
+                    } else if (linha.contains("window size:")) {
+                        String[] auxProtWin = linha.split(" window size: ");
+                        protocol = auxProtWin[0];
+                        TCPwindowSize = auxProtWin[1];
+                    } else if (linha.contains("buffer size:")) {
+                        String[] auxProtWin = linha.split(" buffer size:  ");
+                        protocol = auxProtWin[0];
+                        UDPbufferSize = auxProtWin[1];
+                    } else if (linha.contains("local ") && !linha.contains("Binding to")) {
+                        String[] auxLocal = linha.split("local ")[1].split(" port ");
+                        localIp = auxLocal[0];
+                        localPort = Integer.valueOf(auxLocal[1].split(" connected with ")[0]).intValue();
+                    } else if (linha.contains("Sent") && linha.contains("datagrams")) {
+                        String auxdatagram = linha.split("Sent ")[1].split(" datagrams")[0];
+                        UDPSentDatagrams = Long.valueOf(auxdatagram).longValue();
+                    } else if (linha.contains("Sending") && linha.contains("datagrams")) {
+                        // Sending 1470 byte datagrams
+                        String[] auxdatagram = linha.split("Sending ")[1].split(" ");
+                        UDPSendingDatagrams = Long.valueOf(auxdatagram[0]).longValue();
+                        UDPSendingDatagramsFormat = auxdatagram[1];
+                    } else if (linha.contains("sec") && linha.contains("Kbits") && !linha.contains("NaN")) {
+                        if (listRequest == null) {
+                            listRequest = new ArrayList<IperfRequest>();
+                        }
+                        listRequest.add(new IperfRequest(linha, iperfVersion));
+                    }
                 }
             }
             if(listRequest != null && !listRequest.isEmpty()) {
@@ -107,24 +241,24 @@ public class IperfResult {
                 }
             }
         }
-            switch (testType) {
-                case 0:
-                    direction = "Downlink";
-                    protocol = "TCP";
-                    break;
-                case 1:
-                    direction = "Uplink";
-                    protocol = "TCP";
-                    break;
-                case 2:
-                    direction = "Downlink";
-                    protocol = "UDP";
-                    break;
-                case 3:
-                    direction = "Uplink";
-                    protocol = "UDP";
-                    break;
-            }
+        switch (testType) {
+            case 0:
+                direction = "Downlink";
+                protocol = "TCP";
+                break;
+            case 1:
+                direction = "Uplink";
+                protocol = "TCP";
+                break;
+            case 2:
+                direction = "Downlink";
+                protocol = "UDP";
+                break;
+            case 3:
+                direction = "Uplink";
+                protocol = "UDP";
+                break;
+        }
     }
 
     public String toString(){

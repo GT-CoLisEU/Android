@@ -1,7 +1,5 @@
 package br.com.rnp.measurements;
 
-import android.util.Log;
-
 import java.util.List;
 
 import br.com.rnp.measurements.Iperf.IperfResult;

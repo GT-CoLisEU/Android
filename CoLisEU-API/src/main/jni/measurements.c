@@ -17,76 +17,200 @@
 #include <string.h>
 #include <android/log.h>
 #include <jni.h>
-#include <pthread.h>
-//#include "BWCTL/bwctl.h"
-//#include "BWCTL/SocketJNIClient.h"
-#include "./Iperf-2.0.5/src/iperf_wrapper.h"
-#include "./reset_globals.h"
+#include <sys/types.h>
+#include <unistd.h>
 #include <stdio.h>
-FILE *output_jni;
+#include <stdlib.h>
+#include <assert.h>
+#include <sys/mman.h>
 
-#define TCP_DOWNLINK  0
-#define TCP_UPLINK  1
-#define UDP_DOWNLINK  2
-#define UDP_UPLINK  3
+#include "./bwctl-1.5.4/bwctl/bwctl.h"
+#include "./bwctl-1.5.4/bwctld/bwctld.h"
+
+#include "./bwctl-1.5.4/iperf-2.0.5/src/iperf_wrapper.h"
+#include "./bwctl-1.5.4/iperf-2.0.5/reset_globals.h"
+
+#include "./bwctl-1.5.4/iperf-3.0.11/src/iperf_main.h"
+
+#include "./bwctl-1.5.4/Log.h"
+
+char *glob_var;
+
+//FILE *output_jni;
+char *tmp_dir;
+char *conf_dir;
+
+#ifndef MIN
+#define MIN(a,b)    ((a<b)?a:b)
+#endif
+#ifndef MAX
+#define MAX(a,b)    ((a>b)?a:b)
+#endif
 
 int cont = 0;
 
-const char* ConvertJString(JNIEnv* env, jstring str)
+char* ConvertJString(JNIEnv* env, jstring str)
 {
    //if ( !str ) LString();
 
-   const jsize len      = (*env)->GetStringUTFLength(env, str);
-   const char* strChars = (*env)->GetStringUTFChars(env, str, (jboolean *)0);
+   jsize len      = (*env)->GetStringUTFLength(env, str);
+   char* strChars = (*env)->GetStringUTFChars(env, str, (jboolean *)0);
 
    return strChars;
 }
 
-
-/* This is a trivial JNI example where we use a native method
- * to return a new VM String. See the corresponding Java source
- * file located at:
- *
- *   apps/samples/hello-jni/project/src/com/example/hellojni/HelloJni.java
- */
-jstring
-Java_br_com_rnp_measurements_Iperf_IperfTask_stringFromJNI( JNIEnv* env, jobject thiz, jstring ipaddr, jstring serveripaddr, jstring serverport, jint testtype, jstring tmpdir)
+char** str_split(char* a_str, const char a_delim)
 {
+    char** result    = 0;
+    size_t count     = 0;
+    char* tmp        = a_str;
+    char* last_comma = 0;
+    char delim[2];
+    delim[0] = a_delim;
+    delim[1] = 0;
 
-    char* tmpdirpath = ConvertJString( env, tmpdir );
-    char* tmpipaddr = ConvertJString( env, ipaddr );
+    /* Count how many elements will be extracted. */
+    while (*tmp)
+    {
+        if (a_delim == *tmp)
+        {
+            count++;
+            last_comma = tmp;
+        }
+        tmp++;
+    }
 
-    __android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "Temp dir = %s, Android IP: %s", tmpdirpath, tmpipaddr);
+    /* Add space for trailing token. */
+    count += last_comma < (a_str + strlen(a_str) - 1);
 
-//    char **command = (char *[]){"bwctl", "-T", "iperf", "-c", "200.130.99.55", "-a 1"};
-//    __android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "Starting BWCTL");
-//    bwctlRun(tmpipaddr, tmpdirpath, 6, command);
+    /* Add space for terminating null string so caller
+       knows where the list of returned strings ends. */
+    count++;
+
+    result = malloc(sizeof(char*) * count);
+
+    if (result)
+    {
+        size_t idx  = 0;
+        char* token = strtok(a_str, delim);
+
+        while (token)
+        {
+            assert(idx < count);
+            *(result + idx++) = strdup(token);
+            token = strtok(0, delim);
+        }
+        assert(idx == count - 1);
+        *(result + idx) = 0;
+    }
+
+    return result;
+}
+
+jstring
+Java_br_com_rnp_measurements_Bwctld_BwctldTask_stringFromJNI( JNIEnv* env, jobject thiz, jstring commandp, jstring tmpdir, jstring confdir)
+{
+    char *command = ConvertJString( env, commandp );
+    tmp_dir = ConvertJString( env, tmpdir );
+    conf_dir = ConvertJString( env, confdir );
 
 
-      char *str_file = "/output.txt";
-      char *str_path = (char *) malloc(1 + strlen(tmpdirpath)+ strlen(str_file) );
-      strcpy(str_path, tmpdirpath);
-      strcat(str_path, str_file);
+    char **commandf = str_split(command, ' ');
+    if(commandf){
+        int nargs = 0;
+         while(commandf[nargs]){
+            nargs++;
+         }
+         bwctldRun(nargs, commandf);
+         free(commandf);
+    }
 
-        __android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "%s", str_path );
-      if(!(output_jni = fopen(str_path,"w+"))){
-           __android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "Unable to create temporary file");
-      }
 
+    char* result = get_log();
+    return (*env)->NewStringUTF(env, result);
+}
 
-     //char **command = (char *[]){"iperf", "-u", "-t", "21", "-i", "1", "-c", "200.130.99.55", "-p", "12001"};
-     __android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "Starting Iperf");
-     char **command = (char *[]){"iperf", "-t", "21", "-i", "1", "-c", "200.130.99.55", "-p", "12001"};
-     iperf_wrapper(9, command);
+jstring
+Java_br_com_rnp_measurements_Bwctl_BwctlTask_stringFromJNI( JNIEnv* env, jobject thiz, jstring commandp, jstring tmpdir)
+{
+    //TO-DO: Tornar alocação dinamica
+    glob_var = mmap(NULL, 5000, PROT_READ | PROT_WRITE,
+                        MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
-    fclose(output_jni);
-    return (*env)->NewStringUTF(env, "Finish...");
+    char *command = ConvertJString( env, commandp );
+    tmp_dir = ConvertJString( env, tmpdir );
 
+     __android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "run: %s", command);
+
+    char **commandf = str_split(command, ' ');
+    if(commandf){
+        int nargs = 0;
+        while(commandf[nargs]){
+            nargs++;
+        }
+        bwctlRun(nargs, commandf);
+        free(commandf);
+    }
+
+    //char* result = get_log();
+    //munmap(glob_var, sizeof *glob_var);
+    return (*env)->NewStringUTF(env, glob_var);
 }
 
 
+jstring
+Java_br_com_rnp_measurements_Iperf_Iperf2Task_stringFromJNI( JNIEnv* env, jobject thiz, jstring commandp, jstring tmpdir)
+{
 
+      //TO-DO: Tornar alocação dinamica
+      glob_var = mmap(NULL, 5000, PROT_READ | PROT_WRITE,
+                              MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
-//    char **command = (char *[]){"bwctl", "-T", "iperf", "-c", "200.130.99.55", "-a 1"};
-//    __android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "Starting BWCTL");
-//    bwctlRun(tmpipaddr, tmpdirpath, 6, command);
+      char *command = ConvertJString( env, commandp );
+      tmp_dir = ConvertJString( env, tmpdir );
+
+      __android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "run: %s", command);
+
+        char **commandf = str_split(command, ' ');
+        if(commandf){
+              reset_all();
+              int nargs = 0;
+              while(commandf[nargs]){
+                  __android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "[%d] = %s", nargs, commandf[nargs]);
+                  nargs++;
+              }
+              iperf_wrapper(nargs, commandf);
+              free(commandf);
+        }
+
+      //char* result = get_log();
+      //munmap(glob_var, sizeof *glob_var);
+      return (*env)->NewStringUTF(env, glob_var);
+}
+
+jstring
+Java_br_com_rnp_measurements_Iperf3_Iperf3Task_stringFromJNI( JNIEnv* env, jobject thiz, jstring commandp, jstring tmpdir)
+{
+    //TO-DO: Tornar alocação dinamica
+    glob_var = mmap(NULL, 5000, PROT_READ | PROT_WRITE,
+                            MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+    char *command = ConvertJString( env, commandp );
+    tmp_dir = ConvertJString( env, tmpdir );
+
+     __android_log_print(ANDROID_LOG_DEBUG, "LOG_JNI", "run: %s", command);
+
+     char **commandf = str_split(command, ' ');
+     if(commandf){
+         int nargs = 0;
+         while(commandf[nargs]){
+             nargs++;
+         }
+         run_iperf3(nargs, commandf);
+         free(commandf);
+     }
+
+    //char* result = get_log();
+    //munmap(glob_var, sizeof *glob_var);
+    return (*env)->NewStringUTF(env, glob_var);
+}

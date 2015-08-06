@@ -1,14 +1,14 @@
 package br.com.rnp.measurements;
 
 import android.content.Context;
-import android.os.AsyncTask;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import br.com.rnp.measurements.Bwctl.BwctlTask;
 import br.com.rnp.measurements.Iperf.IperfResult;
-import br.com.rnp.measurements.Iperf.IperfTask;
-import br.com.rnp.measurements.Network.ConnectionInfo;
+import br.com.rnp.measurements.Iperf.Iperf2Task;
+import br.com.rnp.measurements.Iperf.Iperf3Task;
 import br.com.rnp.measurements.OWAMP.OWAMP;
 import br.com.rnp.measurements.OWAMP.OWAMPArguments;
 import br.com.rnp.measurements.OWAMP.OWAMPResult;
@@ -22,11 +22,47 @@ public class QoSMeasurementTask {
 
     Context context;
     String measurementPoint;
-    IperfResult TCPDownlink;
-    IperfResult TCPUplink;
-    IperfResult UDPDownlink;
-    IperfResult UDPUplink;
+    IperfResult iperfTCPDownlink;
+    IperfResult iperfTCPUplink;
+    IperfResult iperfUDPDownlink;
+    IperfResult iperfUDPUplink;
+
     OWAMPResult RTT;
+
+
+    public IperfResult getIperfTCPDownlink() {
+        return iperfTCPDownlink;
+    }
+
+    public void setIperfTCPDownlink(IperfResult iperfTCPDownlink) {
+        this.iperfTCPDownlink = iperfTCPDownlink;
+    }
+
+    public IperfResult getIperfTCPUplink() {
+        return iperfTCPUplink;
+    }
+
+    public void setIperfTCPUplink(IperfResult iperfTCPUplink) {
+        this.iperfTCPUplink = iperfTCPUplink;
+    }
+
+    public IperfResult getIperfUDPDownlink() {
+        return iperfUDPDownlink;
+    }
+
+    public void setIperfUDPDownlink(IperfResult iperfUDPDownlink) {
+        this.iperfUDPDownlink = iperfUDPDownlink;
+    }
+
+    public IperfResult getIperfUDPUplink() {
+        return iperfUDPUplink;
+    }
+
+    public void setIperfUDPUplink(IperfResult iperfUDPUplink) {
+        this.iperfUDPUplink = iperfUDPUplink;
+    }
+
+
     private List<TracerouteContainer> traceRoute;
 
     public String getMeasurementPoint() {
@@ -35,38 +71,6 @@ public class QoSMeasurementTask {
 
     public void setMeasurementPoint(String measurementPoint) {
         this.measurementPoint = measurementPoint;
-    }
-
-    public IperfResult getTCPDownlink() {
-        return TCPDownlink;
-    }
-
-    public void setTCPDownlink(IperfResult TCPDownlink) {
-        this.TCPDownlink = TCPDownlink;
-    }
-
-    public IperfResult getTCPUplink() {
-        return TCPUplink;
-    }
-
-    public void setTCPUplink(IperfResult TCPUplink) {
-        this.TCPUplink = TCPUplink;
-    }
-
-    public IperfResult getUDPDownlink() {
-        return UDPDownlink;
-    }
-
-    public void setUDPDownlink(IperfResult UDPDownlink) {
-        this.UDPDownlink = UDPDownlink;
-    }
-
-    public IperfResult getUDPUplink() {
-        return UDPUplink;
-    }
-
-    public void setUDPUplink(IperfResult UDPUplink) {
-        this.UDPUplink = UDPUplink;
     }
 
     public OWAMPResult getRTT() {
@@ -90,29 +94,55 @@ public class QoSMeasurementTask {
         this.measurementPoint = measurementPoint;
     }
 
-    public IperfResult measureTCPDownlink(String measurementPort){
-        IperfTask iperf = new IperfTask(context);
-        TCPDownlink = iperf.execute(measurementPoint, measurementPort, IperfTask.TCP_DOWNLINK);
-        return TCPDownlink;
+    public IperfResult iperf3TCPDownlink(String measurementPort){
+        Iperf3Task iperf = new Iperf3Task(context);
+        iperfTCPDownlink = iperf.execute(measurementPoint, measurementPort, Iperf3Task.TCP_DOWNLINK);
+        return iperfTCPDownlink;
     }
 
-    public IperfResult measureTCPUplink(String measurementPort){
-        IperfTask iperf = new IperfTask(context);
-        TCPUplink = iperf.execute(measurementPoint, measurementPort, IperfTask.TCP_UPLINK);
-        return TCPUplink;
+    public IperfResult iperf3TCPUplink(String measurementPort){
+        Iperf3Task iperf = new Iperf3Task(context);
+        iperfTCPUplink = iperf.execute(measurementPoint, measurementPort, Iperf3Task.TCP_UPLINK);
+        return iperfTCPUplink;
     }
 
-    public IperfResult measureUDPDownlink(String measurementPort){
-        IperfTask iperf = new IperfTask(context);
-        UDPDownlink = iperf.execute(measurementPoint, measurementPort, IperfTask.UDP_DOWNLINK);
-        return UDPDownlink;
+    public IperfResult iperf3UDPDownlink(String measurementPort){
+        Iperf3Task iperf = new Iperf3Task(context);
+        iperfUDPDownlink = iperf.execute(measurementPoint, measurementPort, Iperf3Task.UDP_DOWNLINK);
+        return iperfUDPDownlink;
     }
 
-    public IperfResult measureUDPUplink(String measurementPort){
-        IperfTask iperf = new IperfTask(context);
-        UDPUplink = iperf.execute(measurementPoint, measurementPort, IperfTask.UDP_UPLINK);
-        return UDPUplink;
+    public IperfResult iperf3UDPUplink(String measurementPort){
+        Iperf3Task iperf = new Iperf3Task(context);
+        iperfUDPUplink = iperf.execute(measurementPoint, measurementPort, Iperf3Task.UDP_UPLINK);
+        return iperfUDPUplink;
     }
+
+
+    public IperfResult iperf2TCPDownlink(String measurementPort){
+        Iperf2Task iperf = new Iperf2Task(context);
+        iperfTCPDownlink = iperf.execute(measurementPoint, measurementPort, Iperf2Task.TCP_DOWNLINK);
+        return iperfTCPDownlink;
+    }
+
+    public IperfResult iperf2TCPUplink(String measurementPort){
+        Iperf2Task iperf = new Iperf2Task(context);
+        iperfTCPUplink = iperf.execute(measurementPoint, measurementPort, Iperf2Task.TCP_UPLINK);
+        return iperfTCPUplink;
+    }
+
+    public IperfResult iperf2UDPDownlink(String measurementPort){
+        Iperf2Task iperf = new Iperf2Task(context);
+        iperfUDPDownlink = iperf.execute(measurementPoint, measurementPort, Iperf2Task.UDP_DOWNLINK);
+        return iperfUDPDownlink;
+    }
+
+    public IperfResult iperf2UDPUplink(String measurementPort){
+        Iperf2Task iperf = new Iperf2Task(context);
+        iperfUDPUplink = iperf.execute(measurementPoint, measurementPort, Iperf2Task.UDP_UPLINK);
+        return iperfUDPUplink;
+    }
+
 
     public OWAMPResult measureRTT(){
         OWAMPArguments arguments = new OWAMPArguments.Builder().url(measurementPoint)
@@ -146,6 +176,30 @@ public class QoSMeasurementTask {
     }
 
     public MeasurementResult getMeasurementResult() {
-        return new MeasurementResult(measurementPoint, TCPDownlink, TCPUplink, UDPDownlink, UDPUplink, RTT, traceRoute);
+        return new MeasurementResult(measurementPoint, iperfTCPDownlink, iperfTCPUplink, iperfUDPDownlink, iperfUDPUplink, RTT, traceRoute);
+    }
+
+    public IperfResult BWCTLiperf2UDPUplink(String bwctlPort) {
+        BwctlTask task = new BwctlTask(context);
+        iperfUDPUplink = task.execute(BwctlTask.TOOL_IPERF, measurementPoint, bwctlPort, BwctlTask.UDP_UPLINK);
+        return iperfUDPUplink;
+    }
+
+    public IperfResult BWCTLiperf2UDPDownlink(String bwctlPort) {
+        BwctlTask task = new BwctlTask(context);
+        iperfUDPDownlink = task.execute(BwctlTask.TOOL_IPERF, measurementPoint, bwctlPort, BwctlTask.UDP_DOWNLINK);
+        return iperfUDPDownlink;
+    }
+
+    public IperfResult BWCTLiperf2TCPUplink(String bwctlPort) {
+        BwctlTask task = new BwctlTask(context);
+        iperfTCPUplink = task.execute(BwctlTask.TOOL_IPERF, measurementPoint, bwctlPort, BwctlTask.TCP_UPLINK);
+        return iperfTCPUplink;
+    }
+
+    public IperfResult BWCTLiperf2TCPDownlink(String bwctlPort) {
+        BwctlTask task = new BwctlTask(context);
+        iperfTCPDownlink = task.execute(BwctlTask.TOOL_IPERF, measurementPoint, bwctlPort, BwctlTask.TCP_DOWNLINK);
+        return iperfTCPDownlink;
     }
 }

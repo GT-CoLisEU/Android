@@ -24,7 +24,7 @@ public class GatewayManager {
             OWAMPArguments arguments = null;
             /*if(url.startsWith("https://")){
                 arguments = new PingArguments.Builder().url(url.replaceAll("https://", ""))
-                        .timeout(5).count(2).bytes(32).build();
+                        .timeout(iperf-2.0.5).count(2).bytes(32).build();
             }else {*/
                 arguments = new OWAMPArguments.Builder().url(url)
                         .timeout(5).count(2).bytes(32).build();

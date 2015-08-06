@@ -26,10 +26,7 @@ import br.com.rnp.qoslibrary.R;
 
 
 /**
- * Check device's network connectivity and speed 
- * @author emil http://stackoverflow.com/users/220710/emil
- *
- * Modified by matias on 13/01/15.
+ * Created by matias on 19/02/15.
  */
 public class ConnectionInfo {
 
@@ -73,7 +70,7 @@ public class ConnectionInfo {
                 case TelephonyManager.NETWORK_TYPE_EHRPD: // API level 11
                     return "EHRPD"; // ~ 1-2 Mbps
                 case TelephonyManager.NETWORK_TYPE_EVDO_B: // API level 9
-                    return "EVDO_B"; // ~ 5 Mbps
+                    return "EVDO_B"; // ~ iperf-2.0.5 Mbps
                 case TelephonyManager.NETWORK_TYPE_HSPAP: // API level 13
                     return "HSPAP"; // ~ 10-20 Mbps
                 case TelephonyManager.NETWORK_TYPE_IDEN: // API level 8
