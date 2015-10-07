@@ -31,8 +31,8 @@ public class Iperf3Task {
     public IperfResult execute(String serverIp, String serverPort, int testType){
         try {
             String command = makeCommand(testType, serverIp, serverPort);
-            File asset = new File("file:///android_asset/conf");
-            String result = stringFromJNI(command, context.getCacheDir().getAbsolutePath(), asset.getAbsolutePath());
+            //File asset = new File("file:///android_asset/conf");
+            String result = stringFromJNI(command, context.getCacheDir().getAbsolutePath());
 
             //
             System.out.println(result);
@@ -48,8 +48,8 @@ public class Iperf3Task {
     public IperfResult execute(String command){
         try {
 
-            File asset = new File("file:///android_asset/conf");
-            String result = stringFromJNI(command, context.getCacheDir().getAbsolutePath(), asset.getAbsolutePath());
+            //File asset = new File("file:///android_asset/conf");
+            String result = stringFromJNI(command, context.getCacheDir().getAbsolutePath());
 
             System.out.println(result);
             //IperfResult resultIperf = new IperfResult(result, 3);
@@ -68,11 +68,11 @@ public class Iperf3Task {
             case 1:
                 return "iperf3 -c " + serverIp + " -t 10 -i 1 -p " + serverPort + " -R -f k";
             case 2:
-                return "iperf3 -c " + serverIp + " -t 10 -i 1 -p " + serverPort + " -u -b 1g -f k";
+                return "iperf3 -c " + serverIp + " -t 10 -i 1 -p " + serverPort + " -u -b 1g -f k --get-server-output";
             case 3:
-                return "iperf3 -c " + serverIp + " -t 10 -i 1 -p " + serverPort + " -u -R -b 1g -f k --get-server-output";
+                return "iperf3 -c " + serverIp + " -t 10 -i 1 -p " + serverPort + " -u -R -b 1g -f k";
             default:
-                return "iperf3 -c " + serverIp + " -t 10 -i 1 -p " + serverPort + " -f k";
+                return "iperf3 -c " + serverIp + " -t 10 -i 1 -p " + serverPort + " -f k --get-server-output";
         }
     }
 
@@ -92,7 +92,7 @@ public class Iperf3Task {
         }
     }
 
-    public native String  stringFromJNI(String command, String tmpfile, String confdir);
+    public native String  stringFromJNI(String command, String tmpfile);
 
     public native String  unimplementedStringFromJNI();
 

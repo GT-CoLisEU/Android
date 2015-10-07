@@ -506,6 +506,8 @@ iperf_on_connect(struct iperf_test *test)
 	    iprintf(test, report_connecting, test->server_hostname, test->server_port);
 	    if (test->reverse)
 		iprintf(test, report_reverse, test->server_hostname);
+
+		__android_log_print(ANDROID_LOG_DEBUG, "IPERF3_LOG", "proximo");
 	}
     } else {
         len = sizeof(sa);
@@ -526,6 +528,7 @@ iperf_on_connect(struct iperf_test *test)
 	    iprintf(test, report_accepted, ipr, port);
     }
     if (test->json_output) {
+    __android_log_print(ANDROID_LOG_DEBUG, "IPERF3_LOG", "test_json_output");
 	cJSON_AddStringToObject(test->json_start, "cookie", test->cookie);
         if (test->protocol->id == SOCK_STREAM) {
 	    if (test->settings->mss)
@@ -537,6 +540,7 @@ iperf_on_connect(struct iperf_test *test)
 	    }
 	}
     } else if (test->verbose) {
+        __android_log_print(ANDROID_LOG_DEBUG, "IPERF3_LOG", "test_verbose");
         iprintf(test, report_cookie, test->cookie);
         if (test->protocol->id == SOCK_STREAM) {
             if (test->settings->mss)
@@ -549,6 +553,7 @@ iperf_on_connect(struct iperf_test *test)
         }
 
     }
+    __android_log_print(ANDROID_LOG_DEBUG, "IPERF3_LOG", "saiu");
 }
 
 void
@@ -1676,6 +1681,7 @@ iperf_defaults(struct iperf_test *testp)
 
     TAILQ_INIT(&testp->server_output_list);
 
+
     return 0;
 }
 
@@ -2691,19 +2697,24 @@ iprintf(struct iperf_test *test, const char* format, ...)
         va_start(argp, format);
         r = vprintf(format, argp);
 
-        char str[1024];
+        char str[2048];
         vsnprintf( str, sizeof( str), format, argp);
-        __android_log_print(ANDROID_LOG_DEBUG, "IPERF3_LOG_IPRINT_C", "%s", str);
+        __android_log_print(ANDROID_LOG_DEBUG, "IPERF3_LOG_IPRINT_C", "%s\n", str);
         //fprintf(output_jni,"%s", str);
+        //__android_log_print(ANDROID_LOG_DEBUG, "IPERF3_LOG_IPRINT_C", "Morreu 0");
 
-        char * output_text;
-        sprintf(output_text, "%s", str );
-        log_to_file(output_text);
+        //char * output_text;
+        //__android_log_print(ANDROID_LOG_DEBUG, "IPERF3_LOG_IPRINT_C", "Morreu 0.5");
+        //sprintf(output_text, "%s", str );
+        //__android_log_print(ANDROID_LOG_DEBUG, "IPERF3_LOG_IPRINT_C", "Morreu 1");
+        log_to_file(str);
 
+
+        //__android_log_print(ANDROID_LOG_DEBUG, "IPERF3_LOG_IPRINT_C", "Morreu 2");
         va_end(argp);
     }
     else if (test->role == 's') {
-        char linebuffer[1024];
+        char linebuffer[2048];
         va_start(argp, format);
         r = vsnprintf(linebuffer, sizeof(linebuffer), format, argp);
         va_end(argp);
@@ -2716,5 +2727,6 @@ iprintf(struct iperf_test *test, const char* format, ...)
             TAILQ_INSERT_TAIL(&(test->server_output_list), l, textlineentries);
         }
     }
+    //__android_log_print(ANDROID_LOG_DEBUG, "IPERF3_LOG_IPRINT_C", "Não Morreu");
     return r;
 }

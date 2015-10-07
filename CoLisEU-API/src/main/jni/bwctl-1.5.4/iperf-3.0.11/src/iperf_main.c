@@ -106,8 +106,10 @@ run_iperf3(int argc, char **argv)
     }
     __android_log_print(ANDROID_LOG_DEBUG, "IPERF3_LOG", "sets defaults");
     iperf_defaults(test);	/* sets defaults */
+    __android_log_print(ANDROID_LOG_DEBUG, "IPERF3_LOG", "DEFAUTS OK");
 
     if (iperf_parse_arguments(test, argc, argv) < 0) {
+        __android_log_print(ANDROID_LOG_DEBUG, "IPERF3_LOG", "PARSE ARGUMENTS");
         iperf_err(test, "parameter error - %s", iperf_strerror(i_errno));
         fprintf(stderr, "\n");
         __android_log_print(ANDROID_LOG_DEBUG, "IPERF3_LOG", "parameter error - %s", iperf_strerror(i_errno));
@@ -116,6 +118,7 @@ run_iperf3(int argc, char **argv)
     }
 
     if (run(test) < 0){
+        __android_log_print(ANDROID_LOG_DEBUG, "IPERF3_LOG", "RUN TEST");
         iperf_errexit(test, "error - %s", iperf_strerror(i_errno));
         __android_log_print(ANDROID_LOG_DEBUG, "IPERF3_LOG", "error - %s", iperf_strerror(i_errno));
     }

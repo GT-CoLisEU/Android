@@ -10,7 +10,7 @@ public class IperfRequest {
     private long bandwidth;
     private String bandwidthFormat;
     private float UDPJitter = -1;
-    private String UDPDataLoss = "";
+    private String UDPDataLoss = null;
     private long id;
 
     public float getUDPJitter() {

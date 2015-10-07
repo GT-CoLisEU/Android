@@ -12,36 +12,36 @@ import java.util.Scanner;
 public class IperfResult {
     private List<IperfRequest> listRequest = null;
     private long dataTrasnfer;
-    private String dataTrasnferFormat = null;;
+    private String dataTrasnferFormat = null;
     private long bandwidthAverage;
-    private String bandwidthAverageFormat = null;;
-    private String serverIp = null;;
+    private String bandwidthAverageFormat = null;
+    private String serverIp = null;
     private int serverPort;
-    private String localIp = null;;
+    private String localIp = null;
     private int localPort;
-    private String protocol = null;;
-    private String direction = null;;
-    private String TCPwindowSize = null;;
-    private String UDPbufferSize = null;;
+    private String protocol = null;
+    private String direction = null;
+    private String TCPwindowSize = null;
+    private String UDPbufferSize = null;
     private long UDPSentDatagrams;
-    private float UDPJitter = 0;
-    private String UDPDataLoss = "";
+    private float UDPJitterAverage = -1;
+    private String UDPDataLossAverage = null;
     private long id;
 
-    public String getUDPDataLoss() {
-        return UDPDataLoss;
+    public String getUDPDataLossAverage() {
+        return UDPDataLossAverage;
     }
 
-    public void setUDPDataLoss(String UDPDataLoss) {
-        this.UDPDataLoss = UDPDataLoss;
+    public void setUDPDataLossAverage(String UDPDataLoss) {
+        this.UDPDataLossAverage = UDPDataLoss;
     }
 
-    public float getUDPJitter() {
-        return UDPJitter;
+    public float getUDPJitterAverage() {
+        return UDPJitterAverage;
     }
 
-    public void setUDPJitter(float UDPJitter) {
-        this.UDPJitter = UDPJitter;
+    public void setUDPJitterAverage(float UDPJitter) {
+        this.UDPJitterAverage = UDPJitter;
     }
 
     public long getUDPSendingDatagrams() {
@@ -160,8 +160,8 @@ public class IperfResult {
                     bandwidthAverage = finalRequest.getBandwidth();
                     bandwidthAverageFormat = finalRequest.getBandwidthFormat();
                     if (protocol.equals("UDP")){
-                        UDPDataLoss = finalRequest.getUDPDataLoss();
-                        UDPJitter = finalRequest.getUDPJitter();
+                        UDPDataLossAverage = finalRequest.getUDPDataLoss();
+                        UDPJitterAverage = finalRequest.getUDPJitter();
                     }
                     listRequest.remove(finalRequest);
                 }

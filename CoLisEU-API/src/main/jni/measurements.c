@@ -134,7 +134,7 @@ jstring
 Java_br_com_rnp_measurements_Bwctl_BwctlTask_stringFromJNI( JNIEnv* env, jobject thiz, jstring commandp, jstring tmpdir)
 {
     //TO-DO: Tornar alocação dinamica
-    glob_var = mmap(NULL, 5000, PROT_READ | PROT_WRITE,
+    glob_var = mmap(NULL, 8000, PROT_READ | PROT_WRITE,
                         MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
     char *command = ConvertJString( env, commandp );
@@ -163,7 +163,7 @@ Java_br_com_rnp_measurements_Iperf_Iperf2Task_stringFromJNI( JNIEnv* env, jobjec
 {
 
       //TO-DO: Tornar alocação dinamica
-      glob_var = mmap(NULL, 5000, PROT_READ | PROT_WRITE,
+      glob_var = mmap(NULL, 8000, PROT_READ | PROT_WRITE,
                               MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
       char *command = ConvertJString( env, commandp );
@@ -189,10 +189,10 @@ Java_br_com_rnp_measurements_Iperf_Iperf2Task_stringFromJNI( JNIEnv* env, jobjec
 }
 
 jstring
-Java_br_com_rnp_measurements_Iperf3_Iperf3Task_stringFromJNI( JNIEnv* env, jobject thiz, jstring commandp, jstring tmpdir)
+Java_br_com_rnp_measurements_Iperf_Iperf3Task_stringFromJNI( JNIEnv* env, jobject thiz, jstring commandp, jstring tmpdir)
 {
     //TO-DO: Tornar alocação dinamica
-    glob_var = mmap(NULL, 5000, PROT_READ | PROT_WRITE,
+    glob_var = mmap(NULL, 8000, PROT_READ | PROT_WRITE,
                             MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
     char *command = ConvertJString( env, commandp );

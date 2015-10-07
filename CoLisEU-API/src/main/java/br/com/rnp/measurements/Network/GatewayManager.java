@@ -39,12 +39,22 @@ public class GatewayManager {
         Collections.sort(results, new Comparator<OWAMPResult>() {
             @Override
             public int compare(OWAMPResult result1, OWAMPResult result2) {
-
+                if (result1 == null) {
+                    return (result2 == null) ? 0 : 1;
+                }
+                if (result2 == null) {
+                    return -1;
+                }
                 return Float.valueOf(result1.rtt_avg()).compareTo(result2.rtt_avg());
             }
         });
 
-        return results.get(0).getOriginalAddress();
+        for(OWAMPResult result: results){
+            if(result != null){
+                return result.getOriginalAddress();
+            }
+        }
+        return null;
 
     }
 }
